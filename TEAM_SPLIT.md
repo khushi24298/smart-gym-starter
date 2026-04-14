@@ -1,6 +1,6 @@
 # Equal Team Split
 
-## Teammate 1: Member + Booking Flow
+## Khushi's: Member + Booking Flow
 Own these features:
 - sign up / sign in UI
 - profile and membership status page
@@ -10,7 +10,7 @@ Own these features:
 - booking history
 - waitlist display
 
-## Teammate 2: Staff/Admin + Check-In Flow
+## Pushan's: Staff/Admin + Check-In Flow
 Own these features:
 - QR check-in scan page
 - check-in validation API
