@@ -1,20 +1,189 @@
 import MembershipPlan from '../models/MembershipPlan.js';
 import Booking from '../models/Booking.js';
 import CheckIn from '../models/CheckIn.js';
+import User from '../models/User.js';
+import GymClass from '../models/GymClass.js';
 
 export const getPlans = async (req, res) => {
-  const plans = await MembershipPlan.find();
-  res.json(plans);
+  try {
+    const plans = await MembershipPlan.find().sort({ createdAt: -1 });
+    res.json(plans);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 export const createPlan = async (req, res) => {
-  const plan = await MembershipPlan.create(req.body);
-  res.status(201).json(plan);
+  try {
+    const payload = {
+      name: req.body.name,
+      price: Number(req.body.price),
+      durationInDays: Number(req.body.durationInDays || req.body.duration),
+      premiumAccess: Boolean(req.body.premiumAccess),
+      description: req.body.description || '',
+      status: req.body.status || 'active'
+    };
+    const plan = await MembershipPlan.create(payload);
+    res.status(201).json(plan);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const updatePlan = async (req, res) => {
+  try {
+    const payload = {
+      name: req.body.name,
+      price: Number(req.body.price),
+      durationInDays: Number(req.body.durationInDays || req.body.duration),
+      premiumAccess: Boolean(req.body.premiumAccess),
+      description: req.body.description || '',
+      status: req.body.status || 'active'
+    };
+    const plan = await MembershipPlan.findByIdAndUpdate(req.params.id, payload, { new: true });
+    if (!plan) return res.status(404).json({ message: 'Plan not found' });
+    res.json(plan);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const deletePlan = async (req, res) => {
+  try {
+    await MembershipPlan.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Plan deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getAdminClasses = async (req, res) => {
+  try {
+    const classes = await GymClass.find().sort({ createdAt: -1 });
+    res.json(classes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const createAdminClass = async (req, res) => {
+  try {
+    const payload = {
+      title: req.body.title || req.body.name,
+      trainerName: req.body.trainerName || req.body.trainer,
+      classType: req.body.classType || 'General',
+      day: req.body.day || req.body.date || 'TBD',
+      time: req.body.time,
+      capacity: Number(req.body.capacity) || 20,
+      description: req.body.description || ''
+    };
+    const gymClass = await GymClass.create(payload);
+    res.status(201).json(gymClass);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const updateAdminClass = async (req, res) => {
+  try {
+    const payload = {
+      title: req.body.title || req.body.name,
+      trainerName: req.body.trainerName || req.body.trainer,
+      classType: req.body.classType || 'General',
+      day: req.body.day || req.body.date || 'TBD',
+      time: req.body.time,
+      capacity: Number(req.body.capacity) || 20,
+      description: req.body.description || ''
+    };
+    const gymClass = await GymClass.findByIdAndUpdate(req.params.id, payload, { new: true });
+    if (!gymClass) return res.status(404).json({ message: 'Class not found' });
+    res.json(gymClass);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const deleteAdminClass = async (req, res) => {
+  try {
+    await GymClass.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Class deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 export const getDashboardStats = async (req, res) => {
-  const totalBookings = await Booking.countDocuments();
-  const totalCheckIns = await CheckIn.countDocuments({ status: 'success' });
-  const failedCheckIns = await CheckIn.countDocuments({ status: 'failed' });
-  res.json({ totalBookings, totalCheckIns, failedCheckIns });
+  try {
+    const totalBookings = await Booking.countDocuments();
+    const totalClasses = await GymClass.countDocuments();
+    const totalMembers = await User.countDocuments({ role: 'member' });
+    const activeMemberships = await User.countDocuments({ role: 'member', membershipStatus: 'active' });
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayCheckIns = await CheckIn.countDocuments({
+      status: 'success',
+      createdAt: { $gte: todayStart }
+    });
+    const noShowCount = await Booking.countDocuments({ status: 'no-show' });
+
+    const membershipDistributionRaw = await User.aggregate([
+      { $match: { role: 'member' } },
+      { $group: { _id: '$membershipStatus', count: { $sum: 1 } } }
+    ]);
+    const membershipDistribution = membershipDistributionRaw.map((item) => ({
+      label: item._id,
+      value: item.count
+    }));
+
+    const attendanceTrendRaw = await CheckIn.aggregate([
+      { $sort: { createdAt: -1 } },
+      { $limit: 7 },
+      {
+        $project: {
+          dateLabel: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          status: 1
+        }
+      },
+      {
+        $group: {
+          _id: '$dateLabel',
+          success: { $sum: { $cond: [{ $eq: ['$status', 'success'] }, 1, 0] } },
+          failed: { $sum: { $cond: [{ $eq: ['$status', 'failed'] }, 1, 0] } }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    const attendanceTrend = attendanceTrendRaw.map((item) => ({
+      label: item._id,
+      success: item.success,
+      failed: item.failed
+    }));
+
+    const classBookingSummaryRaw = await Booking.aggregate([
+      { $group: { _id: '$classId', total: { $sum: 1 } } },
+      { $sort: { total: -1 } },
+      { $limit: 5 }
+    ]);
+    const classBookingSummary = await Promise.all(classBookingSummaryRaw.map(async (item) => {
+      const gymClass = await GymClass.findById(item._id);
+      return {
+        label: gymClass?.title || 'Unknown Class',
+        value: item.total
+      };
+    }));
+
+    res.json({
+      totalBookings,
+      totalClasses,
+      totalMembers,
+      activeMemberships,
+      todayCheckIns,
+      noShowCount,
+      membershipDistribution,
+      attendanceTrend,
+      classBookingSummary
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };

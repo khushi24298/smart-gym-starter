@@ -32,3 +32,25 @@ npm run dev
 
 ## Suggested Team Split
 See `TEAM_SPLIT.md`.
+
+## Credentials
+Member 1
+
+Email: member1@smartgym.com
+Password: member123
+Member 2
+
+Email: member2@smartgym.com
+Password: member123
+Staff
+
+Email: staff@smartgym.com
+Password: staff123
+Trainer
+
+Email: trainer@smartgym.com
+Password: trainer123
+Admin
+
+Email: admin@smartgym.com
+Password: admin123
