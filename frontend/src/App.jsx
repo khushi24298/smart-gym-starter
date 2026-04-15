@@ -3,6 +3,10 @@ import HomePage from './pages/HomePage';
 import ClassesPage from './pages/ClassesPage';
 import CheckInPage from './pages/CheckInPage';
 import AdminPage from './pages/AdminPage';
+import TrainerRosterPage from './pages/TrainerRosterPage';
+import AttendancePage from './pages/AttendancePage';
+import AdminClassesPage from './pages/AdminClassesPage';
+import AdminPlansPage from './pages/AdminPlansPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import MemberDashboard from './pages/MemberDashboard';
@@ -34,12 +38,23 @@ export default function App() {
     if (role === 'admin') {
       return [
         { to: '/admin', label: 'Admin Dashboard' },
-        { to: '/classes', label: 'Manage Classes' },
-        { to: '/admin', label: 'Reports' }
+        { to: '/admin/classes', label: 'Manage Classes' },
+        { to: '/admin/plans', label: 'Plans' },
+        { to: '/attendance', label: 'Attendance' },
+        { to: '/trainers', label: 'Trainer Roster' }
       ];
     }
 
-    // Graceful fallback for trainer/staff/other roles.
+    if (role === 'staff' || role === 'trainer') {
+      return [
+        { to: '/', label: 'Home' },
+        { to: '/checkin', label: 'Check-In' },
+        { to: '/attendance', label: 'Attendance' },
+        { to: '/trainers', label: 'Trainer Roster' }
+      ];
+    }
+
+    // Fallback for any unknown role.
     return [
       { to: '/', label: 'Home' },
       { to: '/classes', label: 'Classes' }
@@ -87,6 +102,22 @@ export default function App() {
             element={<ProtectedRoute allowedRoles={['member']}><BookingHistory /></ProtectedRoute>}
           />
           <Route path="/checkin" element={<CheckInPage />} />
+          <Route
+            path="/trainers"
+            element={<ProtectedRoute allowedRoles={['admin', 'staff', 'trainer']}><TrainerRosterPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/attendance"
+            element={<ProtectedRoute allowedRoles={['admin', 'staff', 'trainer']}><AttendancePage /></ProtectedRoute>}
+          />
+          <Route
+            path="/admin/classes"
+            element={<ProtectedRoute allowedRoles={['admin']}><AdminClassesPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/admin/plans"
+            element={<ProtectedRoute allowedRoles={['admin']}><AdminPlansPage /></ProtectedRoute>}
+          />
           <Route
             path="/admin"
             element={<ProtectedRoute allowedRoles={['admin']}><AdminPage /></ProtectedRoute>}

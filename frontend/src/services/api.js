@@ -8,6 +8,22 @@ export const API_ENDPOINTS = {
     login: '/auth/login'
   },
   classes: '/classes',
+  checkins: {
+    validate: '/checkins/validate',
+    list: '/checkins'
+  },
+  trainers: '/trainers',
+  attendance: {
+    byClass: (classId) => `/attendance/class/${classId}`,
+    update: (bookingId) => `/attendance/${bookingId}`
+  },
+  admin: {
+    dashboard: '/admin/dashboard',
+    classes: '/admin/classes',
+    classById: (id) => `/admin/classes/${id}`,
+    plans: '/admin/plans',
+    planById: (id) => `/admin/plans/${id}`
+  },
   bookings: {
     create: '/bookings',
     byUser: (userId) => `/bookings/user/${userId}`,
