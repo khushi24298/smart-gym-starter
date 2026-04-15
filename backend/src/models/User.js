@@ -14,7 +14,8 @@ const userSchema = new mongoose.Schema({
     enum: ['active', 'paused', 'expired'],
     default: 'active'
   },
-  emergencyContact: { type: String, default: '' }
+  emergencyContact: { type: String, default: '' },
+  specialization: { type: String, default: '' }
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);
