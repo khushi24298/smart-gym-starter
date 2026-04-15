@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import api, { API_ENDPOINTS } from '../services/api';
-import { getStoredUser } from '../services/authStorage';
+import { useAuth } from '../context/AuthContext';
 import StatusMessage from '../components/StatusMessage';
 import ClassCard from '../components/ClassCard';
 
@@ -11,7 +11,7 @@ export default function ClassesPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [actionMessage, setActionMessage] = useState('');
   const [bookingInProgressId, setBookingInProgressId] = useState('');
-  const user = getStoredUser();
+  const { user } = useAuth();
 
   const loadData = async () => {
     setIsLoading(true);

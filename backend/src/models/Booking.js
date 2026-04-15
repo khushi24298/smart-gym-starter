@@ -5,7 +5,7 @@ const bookingSchema = new mongoose.Schema({
   classId: { type: mongoose.Schema.Types.ObjectId, ref: 'GymClass', required: true },
   status: {
     type: String,
-    enum: ['booked', 'waitlisted', 'cancelled', 'completed', 'no-show'],
+    enum: ['booked', 'waitlisted', 'cancelled', 'completed', 'absent', 'no-show'],
     default: 'booked'
   }
 }, { timestamps: true });

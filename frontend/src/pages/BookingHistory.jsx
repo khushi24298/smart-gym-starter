@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import api, { API_ENDPOINTS } from '../services/api';
-import { getStoredUser } from '../services/authStorage';
+import { useAuth } from '../context/AuthContext';
 import StatusMessage from '../components/StatusMessage';
 
 export default function BookingHistory() {
-  const user = getStoredUser();
+  const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState('');

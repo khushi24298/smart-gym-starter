@@ -1,5 +1,4 @@
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
-import HomePage from './pages/HomePage';
 import ClassesPage from './pages/ClassesPage';
 import CheckInPage from './pages/CheckInPage';
 import AdminPage from './pages/AdminPage';
@@ -7,6 +6,11 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import MemberDashboard from './pages/MemberDashboard';
 import BookingHistory from './pages/BookingHistory';
+import AdminClassesPage from './pages/AdminClassesPage';
+import AdminPlansPage from './pages/AdminPlansPage';
+import TrainerRosterPage from './pages/TrainerRosterPage';
+import AttendancePage from './pages/AttendancePage';
+import AdminStaffPage from './pages/AdminStaffPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './context/AuthContext';
 
@@ -17,8 +21,6 @@ export default function App() {
   const getNavLinks = () => {
     if (!isAuthenticated) {
       return [
-        { to: '/', label: 'Home' },
-        { to: '/login', label: 'Login' },
         { to: '/register', label: 'Register' }
       ];
     }
@@ -34,29 +36,32 @@ export default function App() {
     if (role === 'admin') {
       return [
         { to: '/admin', label: 'Admin Dashboard' },
-        { to: '/classes', label: 'Manage Classes' },
-        { to: '/admin', label: 'Reports' }
+        { to: '/admin/classes', label: 'Classes' },
+        { to: '/admin/plans', label: 'Plans' },
+        { to: '/attendance', label: 'Attendance' },
+        { to: '/admin/staff', label: 'Trainers & staff' },
+        { to: '/checkin', label: 'Check-In' }
       ];
     }
 
-    // Graceful fallback for trainer/staff/other roles.
-    return [
-      { to: '/', label: 'Home' },
-      { to: '/classes', label: 'Classes' }
-    ];
-  };
+    if (role === 'staff' || role === 'trainer') {
+      return [
+        { to: '/checkin', label: 'Check-In' },
+        { to: '/attendance', label: 'Attendance' },
+        { to: '/trainers', label: 'Trainer Roster' }
+      ];
+    }
 
-  const handleLogout = () => {
-    logout();
+    return [{ to: '/', label: 'Login' }];
   };
 
   return (
     <div className="app-shell">
       <nav className="nav">
-        <div className="brand">
+        <Link to="/" className="brand" style={{ textDecoration: 'none', color: 'inherit' }}>
           <h2>Smart Gym</h2>
           <span className="brand-subtitle">Train. Track. Transform.</span>
-        </div>
+        </Link>
         <div className="nav-links">
           {getNavLinks().map((item) => (
             <Link key={`${item.to}-${item.label}`} to={item.to}>{item.label}</Link>
@@ -64,20 +69,19 @@ export default function App() {
           {isAuthenticated && (
             <>
               <span className="user-chip">{user?.name || 'User'}</span>
-              <button className="nav-button" onClick={handleLogout}>Logout</button>
+              <button type="button" className="nav-button" onClick={() => logout()}>Logout</button>
             </>
           )}
         </div>
       </nav>
       <div className="container">
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
+          {/* Landing = login only (no separate home at /) */}
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/classes"
-            element={<ProtectedRoute><ClassesPage /></ProtectedRoute>}
-          />
+
+          <Route path="/classes" element={<ProtectedRoute><ClassesPage /></ProtectedRoute>} />
           <Route
             path="/member/dashboard"
             element={<ProtectedRoute allowedRoles={['member']}><MemberDashboard /></ProtectedRoute>}
@@ -86,11 +90,35 @@ export default function App() {
             path="/bookings/history"
             element={<ProtectedRoute allowedRoles={['member']}><BookingHistory /></ProtectedRoute>}
           />
-          <Route path="/checkin" element={<CheckInPage />} />
+
+          <Route path="/checkin" element={<ProtectedRoute allowedRoles={['admin', 'staff', 'trainer']}><CheckInPage /></ProtectedRoute>} />
+
+          <Route
+            path="/trainers"
+            element={<ProtectedRoute allowedRoles={['admin', 'staff', 'trainer']}><TrainerRosterPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/attendance"
+            element={<ProtectedRoute allowedRoles={['admin', 'staff', 'trainer']}><AttendancePage /></ProtectedRoute>}
+          />
+
+          <Route
+            path="/admin/classes"
+            element={<ProtectedRoute allowedRoles={['admin']}><AdminClassesPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/admin/plans"
+            element={<ProtectedRoute allowedRoles={['admin']}><AdminPlansPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/admin/staff"
+            element={<ProtectedRoute allowedRoles={['admin']}><AdminStaffPage /></ProtectedRoute>}
+          />
           <Route
             path="/admin"
             element={<ProtectedRoute allowedRoles={['admin']}><AdminPage /></ProtectedRoute>}
           />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

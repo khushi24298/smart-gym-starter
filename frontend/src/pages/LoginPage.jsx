@@ -42,6 +42,7 @@ export default function LoginPage() {
       // Route users to their primary area based on role.
       if (loggedInUser.role === 'admin') navigate('/admin');
       else if (loggedInUser.role === 'member') navigate('/member/dashboard');
+      else if (loggedInUser.role === 'staff' || loggedInUser.role === 'trainer') navigate('/checkin');
       else navigate('/');
     } catch (error) {
       setSubmitMessage(error.response?.data?.message || 'Login failed. Please try again.');

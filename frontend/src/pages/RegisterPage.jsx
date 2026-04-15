@@ -49,7 +49,7 @@ export default function RegisterPage() {
         password: formData.password
       };
       await api.post(API_ENDPOINTS.auth.register, payload);
-      navigate('/login', {
+      navigate('/', {
         state: { successMessage: 'Registration successful. Please login.' }
       });
     } catch (error) {
@@ -95,7 +95,7 @@ export default function RegisterPage() {
         </form>
 
         <StatusMessage type="error">{submitMessage}</StatusMessage>
-        <p>Already have an account? <Link to="/login">Go to login</Link></p>
+        <p>Already have an account? <Link to="/">Go to login</Link></p>
       </div>
     </div>
   );

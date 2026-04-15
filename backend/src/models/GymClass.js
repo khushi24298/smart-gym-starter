@@ -8,7 +8,8 @@ const gymClassSchema = new mongoose.Schema({
   time: { type: String, required: true },
   capacity: { type: Number, default: 20 },
   bookedCount: { type: Number, default: 0 },
-  waitlistCount: { type: Number, default: 0 }
+  waitlistCount: { type: Number, default: 0 },
+  description: { type: String, default: '' }
 }, { timestamps: true });
 
 export default mongoose.model('GymClass', gymClassSchema);
