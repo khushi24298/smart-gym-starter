@@ -1,17 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import api, { API_ENDPOINTS } from '../services/api';
 import StatusMessage from '../components/StatusMessage';
 import { useAuth } from '../context/AuthContext';
 
+function homeForUser(user) {
+  if (!user) return '/';
+  if (user.role === 'admin') return '/admin';
+  if (user.role === 'member') return '/member/dashboard';
+  if (user.role === 'staff' || user.role === 'trainer') return '/checkin';
+  return '/';
+}
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [submitMessage, setSubmitMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      navigate(homeForUser(user), { replace: true });
+    }
+  }, [user, navigate]);
 
   const validate = () => {
     const newErrors = {};
@@ -39,10 +53,7 @@ export default function LoginPage() {
       const loggedInUser = response.data.user;
       login(loggedInUser);
 
-      // Route users to their primary area based on role.
-      if (loggedInUser.role === 'admin') navigate('/admin');
-      else if (loggedInUser.role === 'member') navigate('/member/dashboard');
-      else navigate('/');
+      navigate(homeForUser(loggedInUser));
     } catch (error) {
       setSubmitMessage(error.response?.data?.message || 'Login failed. Please try again.');
     } finally {
@@ -61,8 +72,8 @@ export default function LoginPage() {
       </div>
 
       <div className="auth-wrapper">
-        <h1>Member Login</h1>
-        <p className="auth-subtitle">Welcome back. Let’s get your workout started.</p>
+        <h1>Sign in</h1>
+        <p className="auth-subtitle">Welcome back. Members, staff, and trainers use the same login.</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label>Email</label>

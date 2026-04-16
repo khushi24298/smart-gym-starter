@@ -187,3 +187,104 @@ export const getDashboardStats = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+const STAFF_ROLES = ['staff', 'trainer'];
+
+export const getAdminStaff = async (req, res) => {
+  try {
+    const users = await User.find({ role: { $in: STAFF_ROLES } })
+      .sort({ createdAt: -1 })
+      .select('-password');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const createAdminStaff = async (req, res) => {
+  try {
+    const { name, email, password, role, specialization } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email, and password are required.' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    }
+    if (!STAFF_ROLES.includes(role)) {
+      return res.status(400).json({ message: 'Role must be staff or trainer.' });
+    }
+    const existingUser = await User.findOne({ email: email.trim().toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already exists.' });
+    }
+    const user = await User.create({
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      password,
+      role,
+      specialization: (specialization || '').trim()
+    });
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      specialization: user.specialization || '',
+      membershipStatus: user.membershipStatus
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const updateAdminStaff = async (req, res) => {
+  try {
+    const { name, email, role, specialization, password } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user || !STAFF_ROLES.includes(user.role)) {
+      return res.status(404).json({ message: 'Staff or trainer not found.' });
+    }
+    if (role && !STAFF_ROLES.includes(role)) {
+      return res.status(400).json({ message: 'Role must be staff or trainer.' });
+    }
+    const nextEmail = (email || user.email).trim().toLowerCase();
+    if (nextEmail !== user.email) {
+      const taken = await User.findOne({ email: nextEmail, _id: { $ne: user._id } });
+      if (taken) return res.status(400).json({ message: 'Email already exists.' });
+    }
+    user.name = (name || user.name).trim();
+    user.email = nextEmail;
+    if (role) user.role = role;
+    user.specialization = (specialization !== undefined ? specialization : user.specialization || '').trim();
+    if (password && password.length > 0) {
+      if (password.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+      }
+      user.password = password;
+    }
+    await user.save();
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      specialization: user.specialization || '',
+      membershipStatus: user.membershipStatus
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const deleteAdminStaff = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user || !STAFF_ROLES.includes(user.role)) {
+      return res.status(404).json({ message: 'Staff or trainer not found.' });
+    }
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'User removed.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

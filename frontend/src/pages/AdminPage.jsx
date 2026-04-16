@@ -22,7 +22,7 @@ export default function AdminPage() {
         <Link className="link-button" to="/admin/classes">Manage Classes</Link>
         <Link className="link-button" to="/admin/plans">Manage Plans</Link>
         <Link className="link-button" to="/attendance">Attendance Actions</Link>
-        <Link className="link-button" to="/trainers">Trainer Roster</Link>
+        <Link className="link-button" to="/admin/staff">Trainers &amp; staff</Link>
       </div>
 
       {stats ? (

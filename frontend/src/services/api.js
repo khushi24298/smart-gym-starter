@@ -22,7 +22,9 @@ export const API_ENDPOINTS = {
     classes: '/admin/classes',
     classById: (id) => `/admin/classes/${id}`,
     plans: '/admin/plans',
-    planById: (id) => `/admin/plans/${id}`
+    planById: (id) => `/admin/plans/${id}`,
+    staff: '/admin/staff',
+    staffById: (id) => `/admin/staff/${id}`
   },
   bookings: {
     create: '/bookings',

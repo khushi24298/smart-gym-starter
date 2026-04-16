@@ -8,7 +8,11 @@ import {
   createAdminClass,
   updateAdminClass,
   deleteAdminClass,
-  getDashboardStats
+  getDashboardStats,
+  getAdminStaff,
+  createAdminStaff,
+  updateAdminStaff,
+  deleteAdminStaff
 } from '../controllers/adminController.js';
 
 const router = express.Router();
@@ -24,4 +28,10 @@ router.put('/plans/:id', updatePlan);
 router.delete('/plans/:id', deletePlan);
 
 router.get('/dashboard', getDashboardStats);
+
+router.get('/staff', getAdminStaff);
+router.post('/staff', createAdminStaff);
+router.put('/staff/:id', updateAdminStaff);
+router.delete('/staff/:id', deleteAdminStaff);
+
 export default router;
